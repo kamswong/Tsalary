@@ -5,6 +5,10 @@ on:
     tags:
       - "v*"
 
+# 允许工作流上传 Release 附件（.exe）
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: windows-latest
