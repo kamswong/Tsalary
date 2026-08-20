@@ -1,0 +1,41 @@
+{
+  "name": "wage-timer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "工资计时器 - 悬浮实时工资浮窗 (Electron + Vue)",
+  "main": "electron/main.js",
+  "scripts": {
+    "dev": "vite",
+    "build:web": "vite build",
+    "pack": "npm run build:web && electron-builder --win"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.1.4",
+    "electron": "^30.5.1",
+    "electron-builder": "^24.13.3",
+    "vite": "^5.4.8",
+    "vue": "^3.5.12"
+  },
+  "build": {
+    "appId": "com.yus.wagetimer",
+    "productName": "工资计时器",
+    "copyright": "Copyright © 2026",
+    "directories": {
+      "output": "dist_electron",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "assets/**/*"
+    ],
+    "portable": {
+      "artifactName": "工资计时器.exe"
+    },
+    "win": {
+      "target": "portable",
+      "icon": "assets/icon.ico"
+    }
+  }
+}
