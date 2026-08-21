@@ -5,8 +5,11 @@ export const DEFAULT_CONFIG = {
   schedule: '双休', // 双休 | 单休 | 月休
   rest_days: 4, // 月休天数
   segments_text: '09:00-12:00\n13:00-18:00',
-  insurance_rate: 10.5, // 五险一金个人合计比例（预留）
-  insurance_enabled: false, // 默认不扣除，仅预留
+  insurance_amount_monthly: 0, // 每月手动扣除额（五险一金等，元）
+  allowances: [], // 额外补贴 [{ name: '', amount: 0（元/月） }]
+  show_currency_symbol: true, // 金额前是否显示 ¥
+  number_color: '', // 数字显示颜色，空=随状态（赚钱时绿色）
+  theme: 'dark', // 深色 | 浅色
   topmost: true
 }
 
@@ -55,14 +58,18 @@ export function derive(cfg) {
   const segs = parseSegments(cfg.segments_text || '')
   const wd = workingDaysPerMonth(cfg.schedule, cfg.rest_days)
   const dailySeconds = dailyWorkingSeconds(segs)
-  const dailyWage = wd > 0 ? Number(cfg.monthly_salary) / wd : 0
-  const insRate = Number(cfg.insurance_rate) || 0
-  const dailyWageNet = cfg.insurance_enabled ? dailyWage * (1 - insRate / 100) : dailyWage
+  const monthlySalary = Number(cfg.monthly_salary) || 0
+  const deductionMonthly = Number(cfg.insurance_amount_monthly) || 0
+  const allowancesMonthly = (cfg.allowances || []).reduce((s, a) => s + (Number(a.amount) || 0), 0)
+  const monthlyNet = monthlySalary - deductionMonthly + allowancesMonthly
+  const dailyWage = wd > 0 ? monthlySalary / wd : 0
+  const dailyWageNet = wd > 0 ? monthlyNet / wd : 0
   const perSec = dailySeconds > 0 ? dailyWage / dailySeconds : 0
   const perSecNet = dailySeconds > 0 ? dailyWageNet / dailySeconds : 0
   return { segs, wd, dailySeconds, dailyWage, dailyWageNet, perSec, perSecNet }
 }
 
-export function fmtMoney(n) {
-  return '¥' + (Number(n) || 0).toFixed(2)
+export function fmtMoney(n, showSymbol = true) {
+  const v = (Number(n) || 0).toFixed(2)
+  return (showSymbol ? '¥' : '') + v
 }

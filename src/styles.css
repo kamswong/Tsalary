@@ -1,4 +1,5 @@
-:root {
+/* 深色主题（默认） */
+:root, [data-theme="dark"] {
   --bg: #0f1419;
   --card: #1a212b;
   --card-2: #222c38;
@@ -8,9 +9,30 @@
   --accent-2: #3da9fc;
   --danger: #ff6b6b;
   --border: #2a3340;
+  --input-bg: #0e141b;
+  --input-focus: #16202b;
+  --control: #28323f;
+  --glass-bg: rgba(15, 20, 27, 0.97);
+  --glass-border: rgba(255, 255, 255, 0.12);
 }
 
-* { box-sizing: border-box; }
+/* 浅色主题 */
+[data-theme="light"] {
+  --bg: #eef1f5;
+  --card: #ffffff;
+  --card-2: #e9edf3;
+  --text: #1c2733;
+  --muted: #6b7683;
+  --accent: #16a34a;
+  --accent-2: #1d77d8;
+  --danger: #e5484d;
+  --border: #dde3ea;
+  --input-bg: #e6eaef;
+  --input-focus: #ffffff;
+  --control: #d6dde5;
+  --glass-bg: rgba(248, 249, 251, 0.97);
+  --glass-border: rgba(0, 0, 0, 0.1);
+}
 
 html, body {
   margin: 0;
@@ -23,6 +45,8 @@ html, body {
   -webkit-font-smoothing: antialiased;
   user-select: none;
 }
+
+* { box-sizing: border-box; }
 
 #app { width: 100%; height: 100%; }
 
@@ -49,7 +73,7 @@ button.primary:hover { background: #36e07f; }
 
 input, textarea, select {
   font-family: inherit;
-  background: #0e141b;
+  background: var(--input-bg);
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: 8px;
