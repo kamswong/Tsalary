@@ -39,6 +39,12 @@
       </div>
     </div>
 
+    <section class="sec title-sec">
+      <h3>窗口标题</h3>
+      <label>悬浮窗标题（留空则显示默认“实时工资”，最多 20 字）</label>
+      <input class="input" v-model="form.title" type="text" maxlength="20" placeholder="实时工资" />
+    </section>
+
     <div class="grid">
     <section class="sec">
       <h3>工资计算</h3>
@@ -214,7 +220,8 @@ function save() {
     show_currency_symbol: form.show_currency_symbol !== false,
     number_color: form.number_color || '',
     theme: form.theme,
-    topmost: form.topmost
+    topmost: form.topmost,
+    title: (form.title || '').trim()
   }
   window.api.saveConfig(payload).then(() => {
     setTimeout(() => { saving.value = false }, 400)
@@ -254,8 +261,8 @@ function save() {
   margin-bottom: 12px;
 }
 .head h2 { margin: 0; font-size: 16px; font-weight: 700; }
-.head-right { display: flex; align-items: center; gap: 10px; }
-.theme-box { display: flex; align-items: center; gap: 8px; }
+.head-right { display: flex; align-items: center; justify-content: flex-end; gap: 10px; }
+.theme-box { display: flex; align-items: center; align-self: center; gap: 8px; }
 
 /* ========== GitHub 按钮 ========== */
 .btn-github {
@@ -284,9 +291,9 @@ function save() {
 .btn-github:hover {
   box-shadow:
     inset 0 1px 0 0 rgba(255, 255, 255, 0.08),
-    inset 0 0 0 1px rgba(252, 232, 3, 0.08);
+    inset 0 0 0 1px rgba(252, 232, 3, 0.08),
+    0 4px 12px rgba(0, 0, 0, 0.35);
   color: #353cca;
-  transform: translate(0, -0.25rem);
   background-color: rgba(0, 0, 0, 0.5);
 }
 

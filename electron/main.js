@@ -17,7 +17,8 @@ const DEFAULT_CONFIG = {
   show_currency_symbol: true,
   number_color: '',
   theme: 'dark',
-  topmost: true
+  topmost: true,
+  title: '实时工资' // 悬浮窗标题，空=显示默认“实时工资”
 }
 
 let config = null
@@ -102,6 +103,7 @@ function createDisplay() {
     }
   })
   displayWin.loadURL(urlFor('display'))
+  displayWin.setTitle(config.title ? config.title : '工资计时器')
   displayWin.once('ready-to-show', () => displayWin.show())
   // X 关闭时收进托盘，而非退出（退出统一走托盘菜单）
   displayWin.on('close', (e) => {
@@ -182,7 +184,10 @@ function createTray() {
 ipcMain.handle('get-config', () => config)
 ipcMain.handle('save-config', (e, cfg) => {
   saveConfigToFile(cfg)
-  if (displayWin) displayWin.webContents.send('config-updated', config)
+  if (displayWin) {
+    displayWin.setTitle((config.title || '').trim() ? config.title : '工资计时器')
+    displayWin.webContents.send('config-updated', config)
+  }
   return true
 })
 ipcMain.on('open-settings', () => createSettings())

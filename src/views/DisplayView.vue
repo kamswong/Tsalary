@@ -1,7 +1,7 @@
 <template>
   <div class="display" :class="{ collapsed: level === 0 }">
     <div v-if="level !== 0" class="bar drag-bar">
-      <span class="title no-drag">实时工资</span>
+      <span class="title no-drag">{{ displayTitle }}</span>
       <div class="bar-btns no-drag">
         <button class="icon" :title="topmost ? '取消置顶' : '置顶显示'" @click="toggleTop">
           <svg class="ic" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -69,6 +69,12 @@ let state = null
 let timer = null
 
 const amountStyle = computed(() => (customColor.value ? { color: customColor.value } : {}))
+
+// 悬浮窗标题：取配置值，空值时回退为默认“实时工资”
+const displayTitle = computed(() => {
+  const t = (cfg.value.title || '').trim()
+  return t || '实时工资'
+})
 
 function tick() {
   if (!state) return
