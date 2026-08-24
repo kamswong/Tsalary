@@ -2,6 +2,7 @@
   <div class="settings" ref="root">
     <div class="settings-body">
     <div class="head drag">
+      <img class="head-logo" :src="iconUrl" alt="Tsalary" draggable="false" />
       <h2>设置</h2>
       <div class="head-right no-drag">
         <div class="theme-box" title="深色 / 浅色主题">
@@ -36,14 +37,14 @@
 
     <section class="sec title-sec">
       <h3>窗口标题</h3>
-      <label>悬浮窗标题（留空则显示默认“Tsalary”，最多 20 字）</label>
+      <label>悬浮窗标题</label>
       <input class="input" v-model="form.title" type="text" maxlength="20" placeholder="Tsalary" />
     </section>
 
     <div class="grid">
     <section class="sec">
       <h3>工资计算</h3>
-      <label>月工资（元）</label>
+      <label>月工资</label>
       <input class="input" v-model.number="form.monthly_salary" type="number" min="0" step="100" />
 
       <label>工作制</label>
@@ -61,10 +62,10 @@
 
     <section class="sec">
       <h3>扣除与补贴</h3>
-      <label>每月扣除（五险一金及税，元）</label>
+      <label>每月扣除</label>
       <input class="input" v-model.number="form.insurance_amount_monthly" type="number" min="0" step="10" placeholder="0" />
 
-      <label>额外补贴（元/月）</label>
+      <label>额外补贴</label>
       <div class="allowance" v-for="(a, i) in form.allowances" :key="i">
         <input class="input a-name" v-model="a.name" type="text" placeholder="补贴名称" />
         <input class="input a-amt" v-model.number="a.amount" type="number" min="0" step="10" placeholder="金额" />
@@ -83,12 +84,24 @@
     </section>
 
     <div class="actions">
-      <button class="btn-github no-drag" title="GitHub 主页" @click="openRepo">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.3.16 1.92.08 2.12.51.56.82 1.28.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z" fill="currentColor"></path>
-        </svg>
-        <span>View on Github</span>
-      </button>
+      <ul class="example-2 no-drag">
+        <li class="icon-content" v-for="s in SOCIALS" :key="s.social">
+          <a :aria-label="s.name" :data-social="s.social" @click="openSocial(s.url)">
+            <div class="filled"></div>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="currentColor"
+              :viewBox="s.viewBox || '0 0 16 16'"
+              xml:space="preserve"
+            >
+              <path :d="s.path" fill="currentColor"></path>
+            </svg>
+          </a>
+          <div class="tooltip">{{ s.name }}</div>
+        </li>
+      </ul>
       <div class="actions-right">
         <button class="btn primary" @click="save" :disabled="saving"><span>应用设置</span></button>
         <button class="btn ghost" @click="close"><span>关闭</span></button>
@@ -122,6 +135,7 @@
 import { reactive, ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { derive, DEFAULT_CONFIG } from '../calc.js'
 import CustomSelect from '../components/CustomSelect.vue'
+import iconUrl from '../assets/icon.png'
 
 const GITHUB_URL = 'https://github.com/kamswong/Tsalary'
 
@@ -183,8 +197,30 @@ function fitHeight() {
 
 onUnmounted(() => { if (resizeObserver) resizeObserver.disconnect() })
 
-function openRepo() {
-  if (window.api) window.api.openExternal(GITHUB_URL)
+const SOCIALS = [
+  {
+    name: 'GitHub',
+    social: 'github',
+    url: GITHUB_URL,
+    path: 'M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8'
+  },
+  {
+    name: 'Instagram',
+    social: 'instagram',
+    url: 'https://www.instagram.com/kams_cx?igsi=bGJpcGJkNHV6ZDQ5',
+    path: 'M8 0C5.829 0 5.556.01 4.703.048 3.85.088 3.269.222 2.76.42a3.9 3.9 0 0 0-1.417.923A3.9 3.9 0 0 0 .42 2.76C.222 3.268.087 3.85.048 4.7.01 5.555 0 5.827 0 8.001c0 2.172.01 2.444.048 3.297.04.852.174 1.433.372 1.942.205.526.478.972.923 1.417.444.445.89.719 1.416.923.51.198 1.09.333 1.942.372C5.555 15.99 5.827 16 8 16s2.444-.01 3.298-.048c.851-.04 1.434-.174 1.943-.372a3.9 3.9 0 0 0 1.416-.923c.445-.445.718-.891.923-1.417.197-.509.332-1.09.372-1.942C15.99 10.445 16 10.173 16 8s-.01-2.445-.048-3.299c-.04-.851-.175-1.433-.372-1.941a3.9 3.9 0 0 0-.923-1.417A3.9 3.9 0 0 0 13.24.42c-.51-.198-1.092-.333-1.943-.372C10.443.01 10.172 0 7.998 0zm-.717 1.442h.718c2.136 0 2.389.007 3.232.046.78.035 1.204.166 1.486.275.373.145.64.319.92.599s.453.546.598.92c.11.281.24.705.275 1.485.039.843.047 1.096.047 3.231s-.008 2.389-.047 3.232c-.035.78-.166 1.203-.275 1.485a2.5 2.5 0 0 1-.599.919c-.28.28-.546.453-.92.598-.28.11-.704.24-1.485.276-.843.038-1.096.047-3.232.047s-2.39-.009-3.233-.047c-.78-.036-1.203-.166-1.485-.276a2.5 2.5 0 0 1-.92-.598 2.5 2.5 0 0 1-.6-.92c-.109-.281-.24-.705-.275-1.485-.038-.843-.046-1.096-.046-3.233s.008-2.388.046-3.231c.036-.78.166-1.204.276-1.486.145-.373.319-.64.599-.92s.546-.453.92-.598c.282-.11.705-.24 1.485-.276.738-.034 1.024-.044 2.515-.045zm4.988 1.328a.96.96 0 1 0 0 1.92.96.96 0 0 0 0-1.92m-4.27 1.122a4.109 4.109 0 1 0 0 8.217 4.109 4.109 0 0 0 0-8.217m0 1.441a2.667 2.667 0 1 1 0 5.334 2.667 2.667 0 0 1 0-5.334'
+  },
+  {
+    name: '抖音',
+    social: 'tiktok',
+    viewBox: '0 0 24 24',
+    url: 'https://v.douyin.com/Lc2RFKv9vIs/',
+    path: 'M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z'
+  }
+]
+
+function openSocial(url) {
+  if (window.api && url) window.api.openExternal(url)
 }
 
 function onThemeToggle(e) {
@@ -274,40 +310,108 @@ function save() {
   margin-bottom: 12px;
 }
 .head h2 { margin: 0; font-size: 16px; font-weight: 700; }
+.head .head-logo {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  margin-right: 8px;
+  flex-shrink: 0;
+  user-select: none;
+  -webkit-user-drag: none;
+}
 .head-right { display: flex; align-items: center; justify-content: flex-end; gap: 10px; }
 .theme-box { display: flex; align-items: center; align-self: center; gap: 8px; }
 
-/* ========== GitHub 按钮 ========== */
-.btn-github {
-  cursor: pointer;
+/* ========== 社交图标（GitHub / Instagram / TikTok） ========== */
+.example-2 {
+  list-style: none;
   display: flex;
-  align-items: center;
   justify-content: center;
-  align-self: center;
-  gap: 0.5rem;
-  border: none;
-  border-radius: 100px;
-  font-weight: 800;
-  place-content: center;
-  height: 34px;
-  padding: 0 0.9rem;
-  white-space: nowrap;
-  font-size: 0.8rem;
-  line-height: 1;
-  background-color: rgba(0, 0, 0, 0.4);
-  box-shadow:
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.04),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.04);
-  color: #fff;
-  transition: all 0.5s cubic-bezier(0.165, 0.84, 0.44, 1);
+  align-items: center;
+  margin: 0;
+  padding: 0;
 }
-.btn-github:hover {
-  box-shadow:
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.08),
-    inset 0 0 0 1px rgba(252, 232, 3, 0.08),
-    0 4px 12px rgba(0, 0, 0, 0.35);
-  color: #353cca;
-  background-color: rgba(0, 0, 0, 0.5);
+.example-2 .icon-content {
+  margin: 0 8px;
+  position: relative;
+}
+.example-2 .icon-content .tooltip {
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 5px;
+  opacity: 0;
+  visibility: hidden;
+  font-size: 14px;
+  white-space: nowrap;
+  transition: all 0.3s ease;
+}
+.example-2 .icon-content:hover .tooltip {
+  opacity: 1;
+  visibility: visible;
+  top: -50px;
+}
+.example-2 .icon-content a {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  color: #4d4d4d;
+  background-color: #fff;
+  transition: all 0.3s ease-in-out;
+  cursor: pointer;
+}
+.example-2 .icon-content a:hover {
+  box-shadow: 3px 2px 45px 0px rgb(0 0 0 / 12%);
+}
+.example-2 .icon-content a svg {
+  position: relative;
+  z-index: 1;
+  width: 24px;
+  height: 24px;
+}
+.example-2 .icon-content a:hover {
+  color: white;
+}
+.example-2 .icon-content a .filled {
+  position: absolute;
+  top: auto;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 0;
+  background-color: #000;
+  transition: all 0.3s ease-in-out;
+}
+.example-2 .icon-content a:hover .filled {
+  height: 100%;
+}
+.example-2 .icon-content a[data-social="github"] .filled,
+.example-2 .icon-content a[data-social="github"] ~ .tooltip {
+  background-color: #24262a;
+}
+.example-2 .icon-content a[data-social="instagram"] .filled,
+.example-2 .icon-content a[data-social="instagram"] ~ .tooltip {
+  background: linear-gradient(
+    45deg,
+    #405de6,
+    #5b51db,
+    #b33ab4,
+    #c135b4,
+    #e1306c,
+    #fd1f1f
+  );
+}
+.example-2 .icon-content a[data-social="tiktok"] .filled,
+.example-2 .icon-content a[data-social="tiktok"] ~ .tooltip {
+  background-color: #010101;
 }
 
 /* ========== 主题日月开关 ========== */

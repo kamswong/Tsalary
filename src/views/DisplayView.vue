@@ -1,6 +1,7 @@
 <template>
   <div class="display" :class="{ collapsed: level === 0 }">
     <div v-if="level !== 0" class="bar drag-bar">
+      <img class="bar-logo no-drag" :src="iconUrl" alt="Tsalary" draggable="false" />
       <span class="title no-drag">{{ displayTitle }}</span>
       <div class="bar-btns no-drag">
         <button class="icon" :title="topmost ? '取消置顶' : '置顶显示'" @click="toggleTop">
@@ -50,6 +51,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { derive, fmtMoney, elapsedWorkingSeconds, DEFAULT_CONFIG } from '../calc.js'
+import iconUrl from '../assets/icon.png'
 
 const H_COLLAPSED = 48  // 仅数字（透明无背景）
 const H_HIDE = 88       // 展开，隐藏明细
@@ -122,7 +124,8 @@ function onMove(e) {
   const dx = e.screenX - drag.sx
   const dy = e.screenY - drag.sy
   if (!drag.didDrag && Math.abs(dx) + Math.abs(dy) > 3) drag.didDrag = true
-  if (drag.didDrag) window.api.moveDisplayDrag(dx, dy)
+  // 主进程读取物理光标坐标定位窗口（1:1 跟随，无 DPI/累计漂移）
+  if (drag.didDrag) window.api.moveDisplayDrag()
 }
 function onUp(e) {
   document.removeEventListener('pointermove', onMove)
@@ -133,6 +136,8 @@ function onUp(e) {
     // 视为点击：展开/收起
     applyLevel(level.value === 0 ? 1 : level.value === 1 ? 2 : 1)
   }
+  // 拖动结束总是复位当前层级窗口高度，杜绝拖动期间任何尺寸残留/拉大
+  applyLevel(level.value)
   drag = null
 }
 
@@ -203,6 +208,15 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   padding: 4px 8px;
   background: var(--card-2);
   cursor: move;
+}
+.bar .bar-logo {
+  width: 15px;
+  height: 15px;
+  border-radius: 3px;
+  margin-right: 6px;
+  flex-shrink: 0;
+  user-select: none;
+  -webkit-user-drag: none;
 }
 .title { font-size: 11px; color: var(--muted); letter-spacing: 1px; }
 .bar-btns { display: flex; gap: 2px; }

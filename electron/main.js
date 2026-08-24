@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, shell } = require('electron')
+const { app, BrowserWindow, ipcMain, Tray, Menu, nativeImage, shell, screen } = require('electron')
 const fs = require('fs')
 const path = require('path')
 const http = require('http')
@@ -210,16 +210,22 @@ ipcMain.handle('resize-display', (e, h) => {
 })
 
 // 数字纯悬浮态：支持鼠标拖拽移动窗口
-let dragAnchor = null
+// 用主进程物理光标坐标直接定位窗口，做到 1:1 跟随，规避 renderer CSS 像素与
+// DPI/累计误差带来的漂移与窗口异常拉大。
+let dragGrab = null
 ipcMain.on('begin-display-drag', () => {
-  if (displayWin) dragAnchor = displayWin.getPosition()
+  if (!displayWin) return
+  const c = screen.getCursorScreenPoint()
+  const w = displayWin.getPosition()
+  dragGrab = { ox: c.x - w[0], oy: c.y - w[1] }
 })
-ipcMain.on('move-display-drag', (e, dx, dy) => {
-  if (displayWin && dragAnchor) {
-    displayWin.setPosition(dragAnchor[0] + Math.round(dx), dragAnchor[1] + Math.round(dy))
+ipcMain.on('move-display-drag', () => {
+  if (displayWin && dragGrab) {
+    const c = screen.getCursorScreenPoint()
+    displayWin.setPosition(c.x - dragGrab.ox, c.y - dragGrab.oy)
   }
 })
-ipcMain.on('end-display-drag', () => { dragAnchor = null })
+ipcMain.on('end-display-drag', () => { dragGrab = null })
 
 app.whenReady().then(async () => {
   loadConfig()
