@@ -36,8 +36,8 @@
       class="amount"
       :class="{ earning: isEarning && !customColor }"
       :style="amountStyle"
-      :title="level === 0 ? '点击展开窗口，按住可拖动' : '点击显示/隐藏每秒·日薪'"
-      @mousedown="onAmountDown"
+      :title="level === 0 ? '点击展开窗口，拖动可移动' : '点击显示/隐藏每秒·日薪'"
+      @pointerdown="onAmountDown"
     >{{ fmtMoney(today, showSymbol) }}</div>
 
     <div class="meta" v-if="level === 2">
@@ -70,10 +70,10 @@ let timer = null
 
 const amountStyle = computed(() => (customColor.value ? { color: customColor.value } : {}))
 
-// 悬浮窗标题：取配置值，空值时回退为默认“实时工资”
+// 悬浮窗标题：取配置值，空值时回退为默认“Tsalary”
 const displayTitle = computed(() => {
   const t = (cfg.value.title || '').trim()
-  return t || '实时工资'
+  return t || 'Tsalary'
 })
 
 function tick() {
@@ -104,13 +104,18 @@ function applyLevel(l) {
 
 function collapse() { applyLevel(0) }
 
-// --- 纯数字态拖拽/点击：mouseup 时判定，拖动绝不误触发展开 ---
+// --- 纯数字态拖拽/点击 ---
+// 用 Pointer Events + setPointerCapture：拖动时光标即使移出 240×48 的小窗口、
+// 或经过透明像素（点穿透），移动事件仍持续投递到捕获元素，窗口严格跟随光标，
+// 解决“隐藏背景后拖拽金额往下滑”的拖尾漂移问题。背景保持完全透明。
 let drag = null
 function onAmountDown(e) {
-  drag = { sx: e.screenX, sy: e.screenY, didDrag: false }
+  if (e.button !== 0) return // 仅左键 / 触摸，忽略右键中键
+  drag = { sx: e.screenX, sy: e.screenY, didDrag: false, el: e.currentTarget }
+  try { drag.el.setPointerCapture(e.pointerId) } catch (_) {}
   window.api.beginDisplayDrag()
-  document.addEventListener('mousemove', onMove)
-  document.addEventListener('mouseup', onUp)
+  document.addEventListener('pointermove', onMove)
+  document.addEventListener('pointerup', onUp)
 }
 function onMove(e) {
   if (!drag) return
@@ -119,9 +124,10 @@ function onMove(e) {
   if (!drag.didDrag && Math.abs(dx) + Math.abs(dy) > 3) drag.didDrag = true
   if (drag.didDrag) window.api.moveDisplayDrag(dx, dy)
 }
-function onUp() {
-  document.removeEventListener('mousemove', onMove)
-  document.removeEventListener('mouseup', onUp)
+function onUp(e) {
+  document.removeEventListener('pointermove', onMove)
+  document.removeEventListener('pointerup', onUp)
+  try { drag && drag.el && drag.el.releasePointerCapture(e.pointerId) } catch (_) {}
   window.api.endDisplayDrag()
   if (drag && !drag.didDrag) {
     // 视为点击：展开/收起

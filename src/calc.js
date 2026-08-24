@@ -11,7 +11,7 @@ export const DEFAULT_CONFIG = {
   number_color: '', // 数字显示颜色，空=随状态（赚钱时绿色）
   theme: 'dark', // 深色 | 浅色
   topmost: true,
-  title: '实时工资' // 悬浮窗标题，空=显示默认“实时工资”
+  title: 'Tsalary' // 悬浮窗标题，空=显示默认“Tsalary”
 }
 
 export function parseSegments(text) {

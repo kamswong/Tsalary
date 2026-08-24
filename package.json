@@ -1,8 +1,8 @@
 {
-  "name": "wage-timer",
-  "version": "1.0.0",
+  "name": "tsalary",
+  "version": "1.2.0",
   "private": true,
-  "description": "工资计时器 - 悬浮实时工资浮窗 (Electron + Vue)",
+  "description": "Tsalary - 悬浮实时工资浮窗 (Electron + Vue)",
   "main": "electron/main.js",
   "scripts": {
     "dev": "vite",
@@ -18,8 +18,8 @@
     "vue": "^3.5.12"
   },
   "build": {
-    "appId": "com.yus.wagetimer",
-    "productName": "工资计时器",
+    "appId": "com.yus.tsalary",
+    "productName": "Tsalary",
     "copyright": "Copyright © 2026",
     "directories": {
       "output": "dist_electron",
@@ -31,7 +31,7 @@
       "assets/**/*"
     ],
     "portable": {
-      "artifactName": "工资计时器.exe"
+      "artifactName": "Tsalary.exe"
     },
     "win": {
       "target": "portable",

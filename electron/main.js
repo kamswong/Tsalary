@@ -5,7 +5,7 @@ const http = require('http')
 
 const isDev = !app.isPackaged
 const userData = app.getPath('userData')
-const configPath = path.join(userData, 'wage_timer_config.json')
+const configPath = path.join(userData, 'tsalary_config.json')
 
 const DEFAULT_CONFIG = {
   monthly_salary: 8000,
@@ -18,7 +18,7 @@ const DEFAULT_CONFIG = {
   number_color: '',
   theme: 'dark',
   topmost: true,
-  title: '实时工资' // 悬浮窗标题，空=显示默认“实时工资”
+  title: 'Tsalary' // 悬浮窗标题，空=显示默认“Tsalary”
 }
 
 let config = null
@@ -103,7 +103,7 @@ function createDisplay() {
     }
   })
   displayWin.loadURL(urlFor('display'))
-  displayWin.setTitle(config.title ? config.title : '工资计时器')
+  displayWin.setTitle(config.title ? config.title : 'Tsalary')
   displayWin.once('ready-to-show', () => displayWin.show())
   // X 关闭时收进托盘，而非退出（退出统一走托盘菜单）
   displayWin.on('close', (e) => {
@@ -156,7 +156,7 @@ function createTray() {
   try {
     // 将内嵌图标写出为文件，规避 asar 内直接加载的兼容性差异
     const b64 = fs.readFileSync(path.join(app.getAppPath(), 'assets', 'icon.b64'), 'utf-8')
-    iconPath = path.join(userData, 'wage_timer_tray.png')
+    iconPath = path.join(userData, 'tsalary_tray.png')
     fs.writeFileSync(iconPath, Buffer.from(b64, 'base64'))
   } catch (e) {
     iconPath = path.join(app.getAppPath(), 'assets', 'icon.png')
@@ -166,7 +166,7 @@ function createTray() {
   } catch (e) {
     return
   }
-  tray.setToolTip('工资计时器')
+  tray.setToolTip('Tsalary')
   const menu = Menu.buildFromTemplate([
     { label: '显示悬浮窗', click: () => displayWin && displayWin.show() },
     { label: '打开设置', click: () => createSettings() },
@@ -185,7 +185,7 @@ ipcMain.handle('get-config', () => config)
 ipcMain.handle('save-config', (e, cfg) => {
   saveConfigToFile(cfg)
   if (displayWin) {
-    displayWin.setTitle((config.title || '').trim() ? config.title : '工资计时器')
+    displayWin.setTitle((config.title || '').trim() ? config.title : 'Tsalary')
     displayWin.webContents.send('config-updated', config)
   }
   return true

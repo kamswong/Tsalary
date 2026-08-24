@@ -14,3 +14,7 @@ pkg_lock_trash.json
 .idea/
 assets/.idea/
 *.iml
+
+# 内部/临时
+.workbuddy/
+build.log

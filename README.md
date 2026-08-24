@@ -1,4 +1,4 @@
-# 工资计时器 (Wage Timer)
+# Tsalary
 
 悬浮实时工资浮窗 —— 桌面右下角实时显示你的"每一秒都在赚钱"。
 
@@ -25,7 +25,7 @@
 ## 项目结构
 
 ```
-wage_timer_electron/
+tsalary/
 ├── electron/          # Electron 主进程与预加载脚本
 ├── src/               # Vue 前端源码
 │   ├── views/         # 页面组件
