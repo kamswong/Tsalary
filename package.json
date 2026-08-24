@@ -23,6 +23,13 @@
     "appId": "com.yus.tsalary",
     "productName": "Tsalary",
     "copyright": "Copyright © 2026",
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "kamswong",
+        "repo": "Tsalary"
+      }
+    ],
     "directories": {
       "output": "dist_electron",
       "buildResources": "build"
