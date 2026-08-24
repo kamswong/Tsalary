@@ -115,7 +115,7 @@ function createSettings() {
   if (settingsWin) { settingsWin.show(); settingsWin.focus(); return }
   settingsWin = new BrowserWindow({
     width: 640,
-    height: 680,
+    height: 720,
     frame: false,
     transparent: true,
     backgroundColor: '#00000000',
@@ -138,10 +138,10 @@ function createSettings() {
   })
 }
 
-// 设置窗口随内容自适应高度（最小 320，最大 720，超出则窗口内滚动）
+// 设置窗口随内容自适应高度（最小 320，最大 820，超出则窗口内滚动）
 ipcMain.handle('resize-settings', (e, h) => {
   if (!settingsWin) return
-  const height = Math.max(320, Math.min(720, Math.round(h)))
+  const height = Math.max(320, Math.min(820, Math.round(h)))
   settingsWin.setContentSize(640, height)
   return true
 })

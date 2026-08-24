@@ -1,5 +1,6 @@
 <template>
   <div class="settings" ref="root">
+    <div class="settings-body">
     <div class="head drag">
       <h2>设置</h2>
       <div class="head-right no-drag">
@@ -93,8 +94,9 @@
         <button class="btn ghost" @click="close"><span>关闭</span></button>
       </div>
     </div>
+    </div>
 
-    <footer class="copyright no-drag">© 2026 C.%Studio</footer>
+    <footer class="copyright no-drag">Copyright © 2026 C.%Studio All Rights Reserved.</footer>
 
     <transition name="fade">
       <div v-if="saving" class="saving">
@@ -239,9 +241,10 @@ function save() {
   position: relative;
   width: 100vw;
   height: auto;
-  max-height: 720px;
-  overflow-y: auto;
-  padding: 16px 22px 24px;
+  max-height: 820px;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0) 26%),
     var(--glass-bg);
@@ -250,6 +253,12 @@ function save() {
   border-radius: 16px;
   border: 1px solid var(--glass-border);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+.settings-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px 22px 4px;
 }
 .grid {
   display: grid;
@@ -465,13 +474,15 @@ textarea.input { resize: none; line-height: 1.5; }
 .actions { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 18px; }
 .actions-right { display: flex; gap: 10px; }
 .copyright {
-  margin-top: 14px;
+  flex: 0 0 auto;
   text-align: center;
   font-size: 11px;
   color: var(--muted);
   letter-spacing: 0.5px;
   opacity: 0.8;
   user-select: none;
+  padding: 12px 16px 18px;
+  border-top: 1px solid var(--glass-border);
 }
 .btn:disabled { opacity: .6; pointer-events: none; }
 
