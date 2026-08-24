@@ -19,7 +19,6 @@
     "vue": "^3.5.12"
   },
   "build": {
-    "compression": "store",
     "appId": "com.yus.tsalary",
     "productName": "Tsalary",
     "copyright": "Copyright © 2026",
