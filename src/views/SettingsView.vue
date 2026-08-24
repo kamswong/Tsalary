@@ -94,6 +94,8 @@
       </div>
     </div>
 
+    <footer class="copyright no-drag">© 2026 C.%Studio</footer>
+
     <transition name="fade">
       <div v-if="saving" class="saving">
         <svg class="pl" viewBox="0 0 240 240">
@@ -462,6 +464,15 @@ textarea.input { resize: none; line-height: 1.5; }
 .chk input[type='color'] { width: 44px; height: 28px; padding: 2px; border-radius: 6px; }
 .actions { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 18px; }
 .actions-right { display: flex; gap: 10px; }
+.copyright {
+  margin-top: 14px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.5px;
+  opacity: 0.8;
+  user-select: none;
+}
 .btn:disabled { opacity: .6; pointer-events: none; }
 
 /* ========== 保存加载动画（四环） ========== */
