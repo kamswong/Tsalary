@@ -1,8 +1,7 @@
 {
   "name": "tsalary",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "private": true,
-  "description": "Tsalary - 悬浮实时工资浮窗 (Electron + Vue)",
   "author": "kams",
   "main": "electron/main.js",
   "scripts": {
@@ -36,7 +35,9 @@
     },
     "win": {
       "target": "portable",
-      "icon": "assets/icon.ico"
+      "icon": "assets/icon.ico",
+      "fileDescription": "",
+      "productName": ""
     }
   }
 }

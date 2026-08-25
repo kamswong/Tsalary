@@ -2,8 +2,10 @@
   <div class="settings" ref="root">
     <div class="settings-body">
     <div class="head drag">
-      <img class="head-logo" :src="iconUrl" alt="Tsalary" draggable="false" />
-      <h2>设置</h2>
+      <div class="head-title">
+        <img class="head-logo" :src="iconUrl" alt="Tsalary" draggable="false" />
+        <h2>Tsalary</h2>
+      </div>
       <div class="head-right no-drag">
         <div class="theme-box" title="深色 / 浅色主题">
           <label class="switch">
@@ -69,7 +71,7 @@
       <div class="allowance" v-for="(a, i) in form.allowances" :key="i">
         <input class="input a-name" v-model="a.name" type="text" placeholder="补贴名称" />
         <input class="input a-amt" v-model.number="a.amount" type="number" min="0" step="10" placeholder="金额" />
-        <button class="btn sm ghost del no-drag" title="删除该项" @click="removeAllowance(i)"><span>✕</span></button>
+        <button class="btn sm del no-drag" title="删除该项" @click="removeAllowance(i)"><span>✕</span></button>
       </div>
       <button class="btn ghost sm add" @click="addAllowance"><span>+ 添加补贴</span></button>
       </section>
@@ -310,11 +312,11 @@ function save() {
   margin-bottom: 12px;
 }
 .head h2 { margin: 0; font-size: 16px; font-weight: 700; }
+.head-title { display: flex; align-items: center; gap: 6px; min-width: 0; }
 .head .head-logo {
   width: 26px;
   height: 26px;
   border-radius: 6px;
-  margin-right: 8px;
   flex-shrink: 0;
   user-select: none;
   -webkit-user-drag: none;
@@ -569,7 +571,13 @@ textarea.input { resize: none; line-height: 1.5; }
 .btn.ghost { background: transparent; }
 .btn.ghost span { color: var(--muted); }
 .btn.sm span { padding: 8px 15px; font-size: 12px; }
-.btn.del:hover span { color: var(--danger); }
+.btn.del {
+  background: linear-gradient(-75deg, #c62828, #e53935, #c62828);
+  border-color: transparent;
+}
+.btn.del span { color: #fff; font-weight: 700; }
+.btn.del:hover { background: linear-gradient(-75deg, #b71c1c, #d32f2f, #b71c1c); }
+.btn.del:active { background: linear-gradient(-75deg, #a31515, #c62828, #a31515); }
 .add { margin: 8px 0 0 auto; display: block; }
 .dl.row2 { display: flex; align-items: center; gap: 16px; }
 .chk { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text); margin: 0; }

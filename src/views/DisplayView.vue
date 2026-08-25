@@ -1,8 +1,10 @@
 <template>
   <div class="display" :class="{ collapsed: level === 0 }">
     <div v-if="level !== 0" class="bar drag-bar">
-      <img class="bar-logo no-drag" :src="iconUrl" alt="Tsalary" draggable="false" />
-      <span class="title no-drag">{{ displayTitle }}</span>
+      <div class="bar-left">
+        <img class="bar-logo no-drag" :src="iconUrl" alt="Tsalary" draggable="false" />
+        <span class="title">{{ displayTitle }}</span>
+      </div>
       <div class="bar-btns no-drag">
         <button class="icon" :title="topmost ? '取消置顶' : '置顶显示'" @click="toggleTop">
           <svg class="ic" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -209,16 +211,16 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   background: var(--card-2);
   cursor: move;
 }
+.bar-left { display: flex; align-items: center; gap: 4px; min-width: 0; }
 .bar .bar-logo {
   width: 15px;
   height: 15px;
   border-radius: 3px;
-  margin-right: 6px;
   flex-shrink: 0;
   user-select: none;
   -webkit-user-drag: none;
 }
-.title { font-size: 11px; color: var(--muted); letter-spacing: 1px; }
+.title { font-size: 11px; color: var(--muted); letter-spacing: 0.5px; }
 .bar-btns { display: flex; gap: 2px; }
 .icon {
   display: inline-flex;
