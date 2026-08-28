@@ -70,7 +70,7 @@ export function derive(cfg) {
   return { segs, wd, dailySeconds, dailyWage, dailyWageNet, perSec, perSecNet }
 }
 
-export function fmtMoney(n, showSymbol = true) {
-  const v = (Number(n) || 0).toFixed(2)
+export function fmtMoney(n, showSymbol = true, decimals = 2) {
+  const v = (Number(n) || 0).toFixed(decimals)
   return (showSymbol ? '¥' : '') + v
 }

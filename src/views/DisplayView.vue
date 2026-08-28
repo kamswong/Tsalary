@@ -44,7 +44,7 @@
     >{{ fmtMoney(today, showSymbol) }}</div>
 
     <div class="meta" v-if="level === 2">
-      <div class="row"><span>每秒</span><b>{{ fmtMoney(perSec, showSymbol) }}</b></div>
+      <div class="row"><span>每秒</span><b>{{ fmtMoney(perSec, showSymbol, 5) }}</b></div>
       <div class="row"><span>日薪</span><b>{{ fmtMoney(dailyWageNet, showSymbol) }}</b></div>
     </div>
   </div>
