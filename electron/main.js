@@ -140,8 +140,9 @@ function createSettings() {
 
 // 设置窗口随内容自适应高度（最小 320，最大 820，超出则窗口内滚动）
 ipcMain.handle('resize-settings', (e, h) => {
-  if (!settingsWin) return
-  const height = Math.max(320, Math.min(820, Math.round(h)))
+  if (!settingsWin) return false
+  const n = typeof h === 'number' && Number.isFinite(h) ? h : 500
+  const height = Math.max(320, Math.min(820, Math.round(n)))
   settingsWin.setContentSize(640, height)
   return true
 })
@@ -202,10 +203,11 @@ ipcMain.handle('toggle-top', () => {
 ipcMain.on('close-display', () => { if (displayWin) displayWin.hide() })
 // 悬浮窗高度随明细显示/隐藏动态调整
 ipcMain.handle('resize-display', (e, h) => {
-  if (displayWin) {
-    const height = Math.max(44, Math.min(200, Math.round(h)))
-    displayWin.setContentSize(240, height)
-  }
+  if (!displayWin) return false
+  // 强制类型消毒：只接受合法有限的数字，否则一律兜底为收起高度
+  const n = typeof h === 'number' && Number.isFinite(h) ? h : 48
+  const height = Math.max(44, Math.min(200, Math.round(n)))
+  displayWin.setContentSize(240, height)
   return true
 })
 
@@ -213,16 +215,27 @@ ipcMain.handle('resize-display', (e, h) => {
 // 用主进程物理光标坐标直接定位窗口，做到 1:1 跟随，规避 renderer CSS 像素与
 // DPI/累计误差带来的漂移与窗口异常拉大。
 let dragGrab = null
+// 统一换算成逻辑像素(DIP)：getCursorScreenPoint 返回物理像素，
+// 而 getPosition/setPosition 使用 DIP，混用会在缩放≠100% 时产生漂移/拉长。
+// 缩放系数按光标当前所在显示器实时获取，拖动跨不同缩放的屏幕也不漂移。
+const toDip = (c) => {
+  const d = screen.getDisplayNearestPoint(c)
+  const f = (d && d.scaleFactor) || 1
+  return { x: c.x / f, y: c.y / f }
+}
 ipcMain.on('begin-display-drag', () => {
   if (!displayWin) return
-  const c = screen.getCursorScreenPoint()
+  const c = toDip(screen.getCursorScreenPoint())
   const w = displayWin.getPosition()
-  dragGrab = { ox: c.x - w[0], oy: c.y - w[1] }
+  // setPosition 要求整数坐标；DIP 换算可能产生浮点，需 Math.round 避免 conversion failure
+  dragGrab = { ox: Math.round(c.x - w[0]), oy: Math.round(c.y - w[1]) }
 })
 ipcMain.on('move-display-drag', () => {
   if (displayWin && dragGrab) {
-    const c = screen.getCursorScreenPoint()
-    displayWin.setPosition(c.x - dragGrab.ox, c.y - dragGrab.oy)
+    const c = toDip(screen.getCursorScreenPoint())
+    const x = Math.round(c.x - dragGrab.ox)
+    const y = Math.round(c.y - dragGrab.oy)
+    displayWin.setPosition(x, y)
   }
 })
 ipcMain.on('end-display-drag', () => { dragGrab = null })
@@ -238,4 +251,21 @@ app.on('before-quit', () => { quitting = true })
 app.on('window-all-closed', () => {
   // 有托盘时即便窗口都关了也不自动退出，等待托盘退出
   if (process.platform !== 'darwin' && !tray) app.quit()
+})
+
+// 全局未捕获异常：写入日志文件，不弹窗，便于后续排查真实根因
+// 用 process.on 才能实际拦截 Node/Electron 默认的错误弹窗；app.on 不会生效。
+process.on('uncaughtException', (err) => {
+  try {
+    const logPath = path.join(userData, 'crash.log')
+    const msg = `[${new Date().toISOString()}] ${err && err.stack ? err.stack : err}\n\n`
+    fs.appendFileSync(logPath, msg)
+  } catch (_) {}
+})
+process.on('unhandledRejection', (reason) => {
+  try {
+    const logPath = path.join(userData, 'crash.log')
+    const msg = `[${new Date().toISOString()}] unhandledRejection: ${reason && reason.stack ? reason.stack : reason}\n\n`
+    fs.appendFileSync(logPath, msg)
+  } catch (_) {}
 })
