@@ -286,8 +286,7 @@ function save() {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0) 26%),
     var(--glass-bg);
-  backdrop-filter: blur(34px) saturate(1.6);
-  -webkit-backdrop-filter: blur(34px) saturate(1.6);
+  /* 不用 backdrop-filter：透明窗口下它采样不到桌面，反而在圆角外渲染出灰色直角 */
   border-radius: 16px;
   border: 1px solid var(--glass-border);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 8px 32px rgba(0, 0, 0, 0.4);

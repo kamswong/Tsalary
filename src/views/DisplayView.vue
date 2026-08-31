@@ -171,8 +171,7 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   width: 240px;
   height: 100%;
   background: var(--glass-bg);
-  backdrop-filter: blur(28px) saturate(1.5);
-  -webkit-backdrop-filter: blur(28px) saturate(1.5);
+  /* 不用 backdrop-filter：透明窗口下它采样不到桌面，反而在圆角外渲染出灰色直角 */
   border: 1px solid var(--glass-border);
   border-radius: 12px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
