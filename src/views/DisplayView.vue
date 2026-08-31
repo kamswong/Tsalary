@@ -102,8 +102,11 @@ function applyConfig(c) {
 
 // 同步窗口高度
 function applyLevel(l) {
+  // 白名单取值：只有 0/1/2 有效，越界/NaN 一律兜底为收起高度，避免传给主进程 undefined/NaN
+  const HEIGHTS = [H_COLLAPSED, H_HIDE, H_SHOW]
+  const h = HEIGHTS[l] ?? H_COLLAPSED
   level.value = l
-  window.api.resizeDisplay([H_COLLAPSED, H_HIDE, H_SHOW][l])
+  window.api.resizeDisplay(h)
 }
 
 function collapse() { applyLevel(0) }
