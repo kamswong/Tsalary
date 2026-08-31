@@ -212,30 +212,28 @@ ipcMain.handle('resize-display', (e, h) => {
 })
 
 // 数字纯悬浮态：支持鼠标拖拽移动窗口
-// 用主进程物理光标坐标直接定位窗口，做到 1:1 跟随，规避 renderer CSS 像素与
-// DPI/累计误差带来的漂移与窗口异常拉大。
+// 关键点：
+// 1) Electron 的 getCursorScreenPoint/getBounds/setBounds 全部使用 DIP（逻辑像素），
+//    不要再除以 scaleFactor 做二次换算，否则缩放≠100% 时移动速度与鼠标不一致、抓取点漂移。
+// 2) 每帧用 setBounds 显式钉死 width/height：对无边框透明窗口反复 setPosition 时，
+//    Windows 的 DWM/边框处理可能造成尺寸漂移（窗口越拖越高），固定 bounds 彻底杜绝。
 let dragGrab = null
-// 统一换算成逻辑像素(DIP)：getCursorScreenPoint 返回物理像素，
-// 而 getPosition/setPosition 使用 DIP，混用会在缩放≠100% 时产生漂移/拉长。
-// 缩放系数按光标当前所在显示器实时获取，拖动跨不同缩放的屏幕也不漂移。
-const toDip = (c) => {
-  const d = screen.getDisplayNearestPoint(c)
-  const f = (d && d.scaleFactor) || 1
-  return { x: c.x / f, y: c.y / f }
-}
 ipcMain.on('begin-display-drag', () => {
   if (!displayWin) return
-  const c = toDip(screen.getCursorScreenPoint())
-  const w = displayWin.getPosition()
-  // setPosition 要求整数坐标；DIP 换算可能产生浮点，需 Math.round 避免 conversion failure
-  dragGrab = { ox: Math.round(c.x - w[0]), oy: Math.round(c.y - w[1]) }
+  const c = screen.getCursorScreenPoint()
+  const b = displayWin.getBounds()
+  dragGrab = {
+    sx: c.x, sy: c.y,           // 起始光标 (DIP)
+    wx: b.x, wy: b.y,           // 起始窗口位置
+    w: b.width, h: b.height     // 起始窗口尺寸（拖动期间钉死）
+  }
 })
 ipcMain.on('move-display-drag', () => {
   if (displayWin && dragGrab) {
-    const c = toDip(screen.getCursorScreenPoint())
-    const x = Math.round(c.x - dragGrab.ox)
-    const y = Math.round(c.y - dragGrab.oy)
-    displayWin.setPosition(x, y)
+    const c = screen.getCursorScreenPoint()
+    const x = Math.round(dragGrab.wx + c.x - dragGrab.sx)
+    const y = Math.round(dragGrab.wy + c.y - dragGrab.sy)
+    displayWin.setBounds({ x, y, width: dragGrab.w, height: dragGrab.h })
   }
 })
 ipcMain.on('end-display-drag', () => { dragGrab = null })
