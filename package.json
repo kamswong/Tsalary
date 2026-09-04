@@ -1,6 +1,6 @@
 {
   "name": "tsalary",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "private": true,
   "author": "kams",
   "main": "electron/main.js",
@@ -21,6 +21,7 @@
     "appId": "com.yus.tsalary",
     "productName": "Tsalary",
     "copyright": "Copyright © 2026",
+    "compression": "normal",
     "directories": {
       "output": "dist_electron",
       "buildResources": "build"

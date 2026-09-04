@@ -1,38 +1,39 @@
 <template>
-  <div class="display" :class="{ collapsed: level === 0 }">
-    <div v-if="level !== 0" class="bar drag-bar">
-      <div class="bar-left">
-        <img class="bar-logo no-drag" :src="iconUrl" alt="Tsalary" draggable="false" />
-        <span class="title">{{ displayTitle }}</span>
-      </div>
-      <div class="bar-btns no-drag">
-        <button class="icon" :title="topmost ? '取消置顶' : '置顶显示'" @click="toggleTop">
-          <svg class="ic" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <rect x="5" y="11" width="14" height="9" rx="2" :fill="topmost ? 'currentColor' : 'none'" :stroke="topmost ? 'none' : 'currentColor'" />
-            <path v-if="topmost" d="M8 11V7a4 4 0 0 1 8 0v4" fill="none" stroke="currentColor" stroke-width="2" />
-            <g v-else fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-              <path d="M8 11V7a4 4 0 0 1 8 0" />
-              <path d="M16.5 5.5 19 8" />
-            </g>
-          </svg>
-        </button>
-        <button class="icon" title="设置" @click="openSettings">
-          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="3.2" />
-            <path d="M19.4 15a1.6 1.6 0 0 0 .32 1.77l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.6 1.6 0 0 0 15 19.4a1.6 1.6 0 0 0-1 1.47V21a2 2 0 1 1-4 0v-.09A1.6 1.6 0 0 0 9 19.4a1.6 1.6 0 0 0-1.77.32l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.6 1.6 0 0 0 4.6 15a1.6 1.6 0 0 0-1.47-1H3a2 2 0 1 1 0-4h.09A1.6 1.6 0 0 0 4.6 9a1.6 1.6 0 0 0-.32-1.77l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.6 1.6 0 0 0 9 4.6a1.6 1.6 0 0 0 1-1.47V3a2 2 0 1 1 4 0v.09a1.6 1.6 0 0 0 1 1.47 1.6 1.6 0 0 0 1.77-.32l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.6 1.6 0 0 0 19.4 9c.6 0 1.05.2 1.47 1H21a2 2 0 1 1 0 4h-.09A1.6 1.6 0 0 0 19.4 15Z" />
-          </svg>
-        </button>
-        <button class="icon" title="收起为数字" @click="collapse">
-          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-            <path d="M6 14.5 12 9l6 5.5" />
-          </svg>
-        </button>
-        <button class="icon" title="收进托盘" @click="closeApp">
-          <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">
-            <path d="M6 6l12 12M18 6 6 18" />
-          </svg>
-        </button>
-      </div>
+  <div class="display" :class="{ collapsed: level === 0 }" @pointerdown="onAmountDown">
+    <!-- 右上角操作按钮：仅展开态显示（收起态只显示金额）；不触发拖拽（no-drag + 阻止冒泡） -->
+    <div class="btns no-drag" v-if="level !== 0" @pointerdown.stop>
+      <button v-if="level !== 0" class="icon" :title="topmost ? '取消置顶' : '置顶显示'" @click="toggleTop">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <rect x="5" y="11" width="14" height="9" rx="2" :fill="topmost ? 'currentColor' : 'none'" :stroke="topmost ? 'none' : 'currentColor'" />
+          <path v-if="topmost" d="M8 11V7a4 4 0 0 1 8 0v4" fill="none" stroke="currentColor" stroke-width="2" />
+          <g v-else fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M8 11V7a4 4 0 0 1 8 0" />
+            <path d="M16.5 5.5 19 8" />
+          </g>
+        </svg>
+      </button>
+      <button class="icon" title="设置" @click="openSettings">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="12" cy="12" r="3.2" />
+          <path d="M19.4 15a1.6 1.6 0 0 0 .32 1.77l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06A1.6 1.6 0 0 0 15 19.4a1.6 1.6 0 0 0-1 1.47V21a2 2 0 1 1-4 0v-.09A1.6 1.6 0 0 0 9 19.4a1.6 1.6 0 0 0-1.77.32l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.6 1.6 0 0 0 4.6 15a1.6 1.6 0 0 0-1.47-1H3a2 2 0 1 1 0-4h.09A1.6 1.6 0 0 0 4.6 9a1.6 1.6 0 0 0-.32-1.77l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.6 1.6 0 0 0 9 4.6a1.6 1.6 0 0 0 1-1.47V3a2 2 0 1 1 4 0v.09a1.6 1.6 0 0 0 1 1.47 1.6 1.6 0 0 0 1.77-.32l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.6 1.6 0 0 0 19.4 9c.6 0 1.05.2 1.47 1H21a2 2 0 1 1 0 4h-.09A1.6 1.6 0 0 0 19.4 15Z" />
+        </svg>
+      </button>
+      <button v-if="level !== 0" class="icon" title="收起为数字" @click="collapse">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M6 14.5 12 9l6 5.5" />
+        </svg>
+      </button>
+      <button class="icon" title="收进托盘" @click="closeApp">
+        <svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">
+          <path d="M6 6l12 12M18 6 6 18" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- 品牌行：展开态显示，与金额同属一个面板，无独立背景分隔 -->
+    <div class="brand" v-if="level !== 0">
+      <img class="logo" :src="iconUrl" alt="Tsalary" draggable="false" />
+      <span class="title">{{ displayTitle }}</span>
     </div>
 
     <div
@@ -40,12 +41,11 @@
       :class="{ earning: isEarning && !customColor }"
       :style="amountStyle"
       :title="level === 0 ? '点击展开窗口，拖动可移动' : '点击显示/隐藏每秒·日薪'"
-      @pointerdown="onAmountDown"
-    >{{ fmtMoney(today, showSymbol) }}</div>
+    ><span class="amount-text">{{ fmtMoney(today, currency) }}</span></div>
 
     <div class="meta" v-if="level === 2">
-      <div class="row"><span>每秒</span><b>{{ fmtMoney(perSec, showSymbol, 5) }}</b></div>
-      <div class="row"><span>日薪</span><b>{{ fmtMoney(dailyWageNet, showSymbol) }}</b></div>
+      <div class="row"><span>每秒</span><b>{{ fmtMoney(perSec, currency, 5) }}</b></div>
+      <div class="row"><span>日薪</span><b>{{ fmtMoney(dailyWageNet, currency) }}</b></div>
     </div>
   </div>
 </template>
@@ -55,9 +55,9 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { derive, fmtMoney, elapsedWorkingSeconds, DEFAULT_CONFIG } from '../calc.js'
 import iconUrl from '../assets/icon.png'
 
-const H_COLLAPSED = 48  // 仅数字（透明无背景）
-const H_HIDE = 88       // 展开，隐藏明细
-const H_SHOW = 116      // 展开，显示明细
+const H_COLLAPSED = 52  // 收起：仅数字 + 右上按钮（统一玻璃面板）
+const H_HIDE = 96       // 展开：品牌 + 金额
+const H_SHOW = 128      // 展开：品牌 + 金额 + 明细
 
 const cfg = ref({ ...DEFAULT_CONFIG })
 const today = ref(0)
@@ -66,7 +66,7 @@ const dailyWageNet = ref(0)
 const topmost = ref(true)
 const isEarning = ref(false)
 const customColor = ref('')
-const showSymbol = ref(true)
+const currency = ref('¥')
 const level = ref(0) // 0 仅数字 | 1 展开隐藏明细 | 2 展开显示明细
 
 let state = null
@@ -94,7 +94,7 @@ function applyConfig(c) {
   perSec.value = state.perSecNet
   dailyWageNet.value = state.dailyWageNet
   topmost.value = c.topmost !== false
-  showSymbol.value = c.show_currency_symbol !== false
+  currency.value = typeof c.currency_symbol === 'string' ? c.currency_symbol : '¥'
   customColor.value = (c.number_color || '').trim()
   document.documentElement.dataset.theme = c.theme === 'light' ? 'light' : 'dark'
   tick()
@@ -111,13 +111,15 @@ function applyLevel(l) {
 
 function collapse() { applyLevel(0) }
 
-// --- 纯数字态拖拽/点击 ---
-// 用 Pointer Events + setPointerCapture：拖动时光标即使移出 240×48 的小窗口、
-// 或经过透明像素（点穿透），移动事件仍持续投递到捕获元素，窗口严格跟随光标，
-// 解决“隐藏背景后拖拽金额往下滑”的拖尾漂移问题。背景保持完全透明。
+// --- 整块面板拖拽/点击 ---
+// 用 Pointer Events + setPointerCapture：拖动时光标即使移出窗口、或经过透明像素，
+// 移动事件仍持续投递到捕获元素，窗口严格跟随光标。整个 .display 都是拖拽热区，
+// 按钮通过 @pointerdown.stop 阻止冒泡，不会误触发拖拽。
 let drag = null
 function onAmountDown(e) {
   if (e.button !== 0) return // 仅左键 / 触摸，忽略右键中键
+  // 收起态：触发（点击展开 / 拖动）只响应金额文字本身，旁边的透明区域不响应
+  if (level.value === 0 && !e.target.closest('.amount-text')) return
   drag = { sx: e.screenX, sy: e.screenY, didDrag: false, el: e.currentTarget }
   try { drag.el.setPointerCapture(e.pointerId) } catch (_) {}
   window.api.beginDisplayDrag()
@@ -137,6 +139,8 @@ function onUp(e) {
   document.removeEventListener('pointerup', onUp)
   try { drag && drag.el && drag.el.releasePointerCapture(e.pointerId) } catch (_) {}
   window.api.endDisplayDrag()
+  // 真实拖动离开右下角停靠位；纯点击（展开/收起）不退出停靠
+  if (drag && drag.didDrag) window.api.releaseDock()
   if (drag && !drag.didDrag) {
     // 视为点击：展开/收起
     applyLevel(level.value === 0 ? 1 : level.value === 1 ? 2 : 1)
@@ -167,18 +171,92 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
 </script>
 
 <style scoped>
+/* YusButtonB 质感：灰色底 + 绿色微光 + 顶部内高光 + 细亮边 + 大圆角(45px) + hover 提亮
+   两种状态（收起/展开）统一灰底；透明窗口下不使用外阴影（会在圆角外四角留下灰印），
+   立体感靠内高光 + 渐变 + 边框表达 */
 .display {
+  position: relative;
   width: 240px;
   height: 100%;
-  background: var(--glass-bg);
-  /* 不用 backdrop-filter：透明窗口下它采样不到桌面，反而在圆角外渲染出灰色直角 */
-  border: 1px solid var(--glass-border);
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  background:
+    linear-gradient(155deg, rgba(46, 204, 113, 0.10), rgba(0, 0, 0, 0) 58%),
+    var(--card-2);
+  border: 1px solid var(--border);
+  border-radius: 25px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.14),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.02);
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  transition: background .25s ease, border-color .25s ease;
 }
+/* 收起态：只展示金额，无背景、无边框、无按钮 */
+.display.collapsed {
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+.display:hover {
+  background:
+    linear-gradient(155deg, rgba(46, 204, 113, 0.18), rgba(0, 0, 0, 0) 58%),
+    var(--card-2);
+  border-color: rgba(46, 204, 113, 0.38);
+}
+.display.collapsed:hover {
+  background: transparent;
+  border-color: transparent;
+}
+.display:active {
+  border-color: rgba(46, 204, 113, 0.5);
+}
+.display.collapsed:active {
+  border-color: transparent;
+}
+
+/* 右上角按钮组：仅展开态显示，悬浮于面板之上，不随面板拖动 */
+.btns {
+  position: absolute;
+  top: 6px;
+  right: 18px;
+  display: flex;
+  gap: 2px;
+  z-index: 3;
+}
+.icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--muted);
+  transition: background .15s ease, color .15s ease, transform .05s ease;
+}
+.icon:hover { background: rgba(46, 204, 113, 0.22); color: var(--accent); }
+.icon:active { transform: scale(0.92); }
+.ic { width: 15px; height: 15px; }
+
+/* 品牌行：与金额/明细同属一个面板，无独立背景，不作为分隔栏 */
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 10px 18px 0;
+  min-width: 0;
+}
+.logo {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+.title { font-size: 11px; color: var(--muted); letter-spacing: 0.5px; }
+
 .amount {
   flex: 1;
   display: flex;
@@ -188,57 +266,29 @@ onUnmounted(() => { if (timer) clearInterval(timer) })
   font-size: 28px;
   font-weight: 800;
   color: var(--muted);
-  padding: 0 6px;
+  padding: 0 8px;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.5px;
   cursor: pointer;
   transition: color .3s ease;
 }
-.amount:hover { color: var(--text); }
-.amount:not(.earning):hover { color: var(--text); }
+.amount:hover { background: transparent; }
 .amount.earning { color: var(--accent); }
-.amount.earning:hover { color: var(--accent); }
-/* 收起态：完全透明，只剩数字，可拖动 */
-.display.collapsed {
-  background: transparent;
-  border: none;
-  box-shadow: none;
-  border-radius: 0;
-}
-.bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 4px 8px;
-  background: var(--card-2);
-  cursor: move;
-}
-.bar-left { display: flex; align-items: center; gap: 4px; min-width: 0; }
-.bar .bar-logo {
-  width: 15px;
-  height: 15px;
-  border-radius: 3px;
-  flex-shrink: 0;
+.amount.earning .amount-text { color: var(--accent); }
+/* 金额文字：收缩贴合文本，成为收起态时唯一的点击/拖动热区 */
+.amount-text {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background .15s ease;
   user-select: none;
-  -webkit-user-drag: none;
 }
-.title { font-size: 11px; color: var(--muted); letter-spacing: 0.5px; }
-.bar-btns { display: flex; gap: 2px; }
-.icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: transparent;
-  padding: 3px 5px;
-  border-radius: 6px;
-  width: 22px;
-  height: 22px;
-}
-.ic { width: 15px; height: 15px; }
-.icon:hover { background: #2c3848; }
+.amount-text:hover { background: rgba(255, 255, 255, 0.05); }
+
 .meta {
   display: flex;
-  padding: 4px 12px 8px;
+  padding: 4px 14px 10px;
   gap: 10px;
 }
 .row {

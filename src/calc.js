@@ -7,7 +7,7 @@ export const DEFAULT_CONFIG = {
   segments_text: '09:00-12:00\n13:00-18:00',
   insurance_amount_monthly: 0, // 每月手动扣除额（五险一金等，元）
   allowances: [], // 额外补贴 [{ name: '', amount: 0（元/月） }]
-  show_currency_symbol: true, // 金额前是否显示 ¥
+  currency_symbol: '¥', // 货币符号，空字符串表示不显示
   number_color: '', // 数字显示颜色，空=随状态（赚钱时绿色）
   theme: 'dark', // 深色 | 浅色
   topmost: true,
@@ -70,7 +70,28 @@ export function derive(cfg) {
   return { segs, wd, dailySeconds, dailyWage, dailyWageNet, perSec, perSecNet }
 }
 
-export function fmtMoney(n, showSymbol = true, decimals = 2) {
+// 货币符号：公开几个常用选项（'' 表示不显示）
+export const CURRENCY_OPTIONS = [
+  { value: '', label: '不显示' },
+  { value: '¥', label: '人民币 ¥' },
+  { value: '$', label: '美元 $' },
+  { value: '€', label: '欧元 €' },
+  { value: '£', label: '英镑 £' },
+  { value: '₩', label: '韩元 ₩' },
+]
+
+// 兼容旧配置：show_currency_symbol(true/false) → currency_symbol(字符串)
+export function normalizeConfig(cfg) {
+  if (cfg && cfg.currency_symbol == null && 'show_currency_symbol' in cfg) {
+    cfg.currency_symbol = cfg.show_currency_symbol === false ? '' : '¥'
+  }
+  if (cfg && cfg.currency_symbol == null) cfg.currency_symbol = DEFAULT_CONFIG.currency_symbol
+  return cfg
+}
+
+export function fmtMoney(n, symbol = '¥', decimals = 2) {
   const v = (Number(n) || 0).toFixed(decimals)
-  return (showSymbol ? '¥' : '') + v
+  // 兼容旧调用仍传布尔：true→¥，false→不显示
+  const sym = typeof symbol === 'boolean' ? (symbol ? '¥' : '') : (symbol || '')
+  return sym + v
 }

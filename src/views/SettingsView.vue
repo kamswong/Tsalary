@@ -37,15 +37,13 @@
       </div>
     </div>
 
-    <section class="sec title-sec">
-      <h3>窗口标题</h3>
+    <section class="sec">
       <label>悬浮窗标题</label>
       <input class="input" v-model="form.title" type="text" maxlength="20" placeholder="Tsalary" />
     </section>
 
     <div class="grid">
     <section class="sec">
-      <h3>工资计算</h3>
       <label>月工资</label>
       <input class="input" v-model.number="form.monthly_salary" type="number" min="0" step="100" />
 
@@ -63,7 +61,6 @@
     </section>
 
     <section class="sec">
-      <h3>扣除与补贴</h3>
       <label>每月扣除</label>
       <input class="input" v-model.number="form.insurance_amount_monthly" type="number" min="0" step="10" placeholder="0" />
 
@@ -77,11 +74,15 @@
       </section>
     </div>
 
-    <section class="sec">
-      <h3>数字显示</h3>
-      <div class="dl row2">
-        <label class="chk"><input type="checkbox" v-model="form.show_currency_symbol" /> 显示 ¥ 符号</label>
-        <label class="chk color">颜色 <input type="color" v-model="form.number_color" /></label>
+    <section class="sec sys-auto">
+      <div class="dl row2 prefs">
+        <span class="chk currency"><span class="flabel">货币</span><CustomSelect :options="currencyOptions" v-model="form.currency_symbol" placeholder="选择货币" /></span>
+        <ColorPicker v-model="form.number_color" />
+        <label class="os-switch" :class="{ off: !autostartAvail }" title="登录 Windows 后自动启动并显示悬浮窗">
+          <input type="checkbox" class="checkbox" :checked="autostartOn" :disabled="!autostartAvail" @change="onAutostart" />
+          <div class="slider"></div>
+          <span class="os-label">开机自启动</span>
+        </label>
       </div>
     </section>
 
@@ -135,8 +136,9 @@
 
 <script setup>
 import { reactive, ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue'
-import { derive, DEFAULT_CONFIG } from '../calc.js'
+import { derive, DEFAULT_CONFIG, CURRENCY_OPTIONS } from '../calc.js'
 import CustomSelect from '../components/CustomSelect.vue'
+import ColorPicker from '../components/ColorPicker.vue'
 import iconUrl from '../assets/icon.png'
 
 const GITHUB_URL = 'https://github.com/kamswong/Tsalary'
@@ -152,11 +154,14 @@ const timeOptions = [
   { label: '朝九晚五（9-12 / 13-17）', value: '朝九晚五' },
   { label: '早八晚六（8-12 / 14-18）', value: '早八晚六' }
 ]
+const currencyOptions = CURRENCY_OPTIONS
 
 const form = reactive({ ...DEFAULT_CONFIG })
 const toast = ref(null)
 const saving = ref(false)
 const root = ref(null)
+const autostartAvail = ref(false) // 打包运行环境才支持
+const autostartOn = ref(false)
 let toastTimer = null
 let resizeObserver = null
 
@@ -181,6 +186,14 @@ onMounted(async () => {
   const c = await window.api.getConfig()
   Object.assign(form, c)
   document.documentElement.dataset.theme = c.theme === 'light' ? 'light' : 'dark'
+  // 开机自启动：读取系统登录启动项当前状态（开发模式下不可用）
+  try {
+    const r = await window.api.autostartGet()
+    if (r) {
+      autostartAvail.value = !!r.available
+      autostartOn.value = !!r.enabled
+    }
+  } catch (e) {}
   const last = (form.segments_text || '').trim()
   const found = Object.keys(TIME_TEMPLATES).find((k) => TIME_TEMPLATES[k] === last)
   timeMode.value = found || '自定义'
@@ -231,6 +244,25 @@ function onThemeToggle(e) {
   window.api.saveConfig({ theme: form.theme })
 }
 
+// 开机自启动开关：立即写入系统登录启动项，结果以系统回读为准
+async function onAutostart(e) {
+  const want = !!e.target.checked
+  autostartOn.value = want // 先即时反馈
+  try {
+    const r = await window.api.autostartSet(want)
+    if (r && r.available) {
+      autostartOn.value = !!r.enabled
+      showToast('success', r.enabled ? '已开启开机自启动' : '已关闭开机自启动')
+    } else {
+      autostartOn.value = false
+      showToast('error', '当前环境不支持开机自启动')
+    }
+  } catch (err) {
+    autostartOn.value = false
+    showToast('error', '设置失败，请重试')
+  }
+}
+
 function addAllowance() {
   form.allowances.push({ name: '', amount: 0 })
 }
@@ -261,7 +293,7 @@ function save() {
     allowances: (form.allowances || [])
       .filter((a) => a.name.trim() !== '' || Number(a.amount) > 0)
       .map((a) => ({ name: a.name.trim(), amount: Number(a.amount) || 0 })),
-    show_currency_symbol: form.show_currency_symbol !== false,
+    currency_symbol: typeof form.currency_symbol === 'string' ? form.currency_symbol : '¥',
     number_color: form.number_color || '',
     theme: form.theme,
     topmost: form.topmost,
@@ -279,7 +311,6 @@ function save() {
   position: relative;
   width: 100vw;
   height: auto;
-  max-height: 820px;
   display: flex;
   flex-direction: column;
   padding: 0;
@@ -289,7 +320,8 @@ function save() {
   /* 不用 backdrop-filter：透明窗口下它采样不到桌面，反而在圆角外渲染出灰色直角 */
   border-radius: 16px;
   border: 1px solid var(--glass-border);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 8px 32px rgba(0, 0, 0, 0.4);
+  /* 不要外阴影：透明窗口渲染不到窗口外，阴影只会在圆角外的四角留下灰印 */
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 .settings-body {
   flex: 1 1 auto;
@@ -472,11 +504,7 @@ function save() {
 }
 
 /* ========== 分组布局 ========== */
-.sec { margin-top: 16px; padding-top: 2px; min-width: 0; }
-.sec h3 {
-  margin: 0 0 4px; font-size: 12px; font-weight: 600; color: var(--accent-2);
-  letter-spacing: 1px; border-bottom: 1px solid var(--border); padding-bottom: 5px;
-}
+.sec { margin-top: 10px; padding-top: 2px; min-width: 0; }
 label { display: block; font-size: 12px; color: var(--muted); margin: 16px 0 7px; }
 
 /* ========== 输入框（neumorphic） ========== */
@@ -579,11 +607,50 @@ textarea.input { resize: none; line-height: 1.5; }
 .btn.del:active { background: linear-gradient(-75deg, #a31515, #c62828, #a31515); }
 .add { margin: 8px 0 0 auto; display: block; }
 .dl.row2 { display: flex; align-items: center; gap: 16px; }
+/* 底部偏好行：显示¥符号 / 颜色 / 开机自启动 三项均匀铺开，避免自启动开关孤零零贴左上角 */
+.dl.row2.prefs { justify-content: space-between; gap: 12px; }
 .chk { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text); margin: 0; }
 .chk input[type='checkbox'] { width: auto; }
-.chk input[type='color'] { width: 44px; height: 28px; padding: 2px; border-radius: 6px; }
+/* 货币下拉选择：标签紧凑贴在自定义下拉前，压缩下拉宽度以免撑爆偏好行 */
+.chk.currency { min-width: 0; }
+.flabel { font-size: 12px; color: var(--text); white-space: nowrap; }
+.chk.currency :deep(.cs) { width: 128px; }
+.chk.currency :deep(.cs-trigger) { padding: 6px 10px; border-radius: 8px; box-shadow: inset 1px 2px 4px rgba(0,0,0,.25); }
+.chk.currency :deep(.cs-menu) { top: auto; bottom: calc(100% + 6px); right: auto; min-width: 148px; }
+.chk.currency :deep(.cs-enter-from), .chk.currency :deep(.cs-leave-to) { transform: translateY(4px); }
 .actions { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 18px; }
 .actions-right { display: flex; gap: 10px; }
+
+/* ========== 开机自启动开关（iOS 滑块样式，作用域限定在 .sys-auto，避免污染主题日夜开关） ========== */
+.os-switch { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; margin: 0; }
+.os-label { font-size: 12px; color: var(--text); white-space: nowrap; }
+.sys-auto .checkbox { display: none; }
+/* iOS 风格滑块（缩小版 44×22）：
+   内容盒 = 44-3*2 = 38 宽 / 22-3*2 = 16 高（圆点直径 16）
+   位移 d 需满足 38 - d = 16 → d = 22，圆点才能贴住两端 */
+.sys-auto .slider {
+  /* 关键：上方主题开关的全局 `.slider` 是 position:absolute; top/left/right/bottom:0，
+     本规则优先级更高但若不显式声明 position，会继承 absolute，
+     导致滑块被定位到最近已定位祖先 .settings(position:relative) 的左上角。 */
+  position: relative;
+  top: auto; left: auto; right: auto; bottom: auto;
+  box-sizing: border-box;
+  width: 44px; height: 22px; background-color: lightgray; border-radius: 20px;
+  overflow: hidden; display: flex; align-items: center; border: 3px solid transparent;
+  transition: .3s; box-shadow: 0 0 8px 0 rgb(0, 0, 0, 0.25) inset; cursor: pointer;
+  flex-shrink: 0;
+}
+.sys-auto .slider::before {
+  content: ''; display: block; width: 100%; height: 100%; background-color: #fff;
+  transform: translateX(-22px); border-radius: 20px; transition: .3s;
+  box-shadow: 0 0 8px 3px rgb(0, 0, 0, 0.25);
+}
+.sys-auto .checkbox:checked ~ .slider::before {
+  transform: translateX(22px); box-shadow: 0 0 8px 3px rgb(0, 0, 0, 0.25);
+}
+.sys-auto .checkbox:checked ~ .slider { background-color: #1cb51f; }
+.sys-auto .checkbox:active ~ .slider::before { transform: translate(0); }
+.sys-auto .checkbox:disabled ~ .slider { opacity: .5; cursor: not-allowed; }
 .copyright {
   flex: 0 0 auto;
   text-align: center;

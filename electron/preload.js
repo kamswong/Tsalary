@@ -16,5 +16,10 @@ contextBridge.exposeInMainWorld('api', {
   openExternal: (url) => ipcRenderer.send('open-external', url),
   beginDisplayDrag: () => ipcRenderer.send('begin-display-drag'),
   moveDisplayDrag: () => ipcRenderer.send('move-display-drag'),
-  endDisplayDrag: () => ipcRenderer.send('end-display-drag')
+  endDisplayDrag: () => ipcRenderer.send('end-display-drag'),
+  // 真实拖动后退出右下角停靠（单击展开/收起不退出）
+  releaseDock: () => ipcRenderer.send('display-dock-release'),
+  // 开机自启动状态查询 / 开关
+  autostartGet: () => ipcRenderer.invoke('autostart-get'),
+  autostartSet: (on) => ipcRenderer.invoke('autostart-set', !!on)
 })
